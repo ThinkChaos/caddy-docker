@@ -1,11 +1,16 @@
+ARG version="1.0.3"
+ARG enable_telemetry="true"
+
 #
 # Builder
 #
-FROM abiosoft/caddy:builder as builder
+FROM golang:1.13-alpine as builder
 
-ARG version="1.0.3"
+RUN apk add --no-cache git gcc musl-dev
+
+COPY builder.sh /usr/bin/builder.sh
+
 ARG plugins="git,cors,realip,expires,cache,cloudflare"
-ARG enable_telemetry="true"
 
 # Process Wrapper
 RUN go get -v github.com/abiosoft/parent
@@ -18,7 +23,6 @@ RUN VERSION=${version} PLUGINS=${plugins} ENABLE_TELEMETRY=${enable_telemetry} /
 FROM alpine:3.10
 LABEL maintainer "Abiola Ibrahim <abiola89@gmail.com>"
 
-ARG version="1.0.3"
 LABEL caddy_version="$version"
 
 # PHP www-user UID and GID

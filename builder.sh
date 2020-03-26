@@ -1,7 +1,6 @@
 #!/bin/sh
 
 VERSION=${VERSION:-"1.0.3"}
-TELEMETRY=${ENABLE_TELEMETRY:-"true"}
 IMPORT="github.com/caddyserver/caddy"
 
 # version <1.0.1 needs to use old import path
@@ -87,10 +86,6 @@ module() {
         switch os.Getenv("ENABLE_TELEMETRY") {
         case "0", "false":
             caddymain.EnableTelemetry = false
-        case "1", "true":
-            caddymain.EnableTelemetry = true
-        default:
-            caddymain.EnableTelemetry = $TELEMETRY
         }
         caddymain.Run()
     }
@@ -105,22 +100,16 @@ legacy() {
 
     # telemetry
     run_file="/go/src/$IMPORT/caddy/caddymain/run.go"
-    if [ "$TELEMETRY" = "false" ]; then
-        cat > "$run_file.disablestats.go" <<EOF
-        package caddymain
-        import "os"
-        func init() {
-            switch os.Getenv("ENABLE_TELEMETRY") {
-            case "0", "false":
-                EnableTelemetry = false
-            case "1", "true":
-                EnableTelemetry = true
-            default:
-                EnableTelemetry = false
-            }
+    cat > "$run_file.disablestats.go" <<EOF
+    package caddymain
+    import "os"
+    func init() {
+        switch os.Getenv("ENABLE_TELEMETRY") {
+        case "0", "false":
+            caddymain.EnableTelemetry = false
         }
+    }
 EOF
-    fi
 }
 
 # caddy source
